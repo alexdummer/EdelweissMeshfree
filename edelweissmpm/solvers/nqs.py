@@ -56,6 +56,8 @@ from edelweissmpm.solvers.base.nonlinearsolverbase import (
 from edelweissmpm.stepactions.base.mpmbodyloadbase import MPMBodyLoadBase
 from edelweissmpm.stepactions.base.mpmdistributedloadbase import MPMDistributedLoadBase
 from edelweissmpm.stepactions.particledistributedload import ParticleDistributedLoad
+import tracemalloc
+import gc
 
 
 class NonlinearQuasistaticSolver(NonlinearImplicitSolverBase):
@@ -175,6 +177,8 @@ class NonlinearQuasistaticSolver(NonlinearImplicitSolverBase):
         """
 
         iterationOptions = self.validOptions.copy()
+
+        # tracemalloc.start()
 
         for k in userIterationOptions.keys():
             if k not in iterationOptions:
@@ -321,7 +325,7 @@ class NonlinearQuasistaticSolver(NonlinearImplicitSolverBase):
                 dU = theDofManager.constructDofVector()
                 P = theDofManager.constructDofVector()
 
-
+                # snapshot1 = tracemalloc.take_snapshot()
                 try:
                     for initialGuess in (dUPrediction, None):
                         try:
@@ -404,7 +408,19 @@ class NonlinearQuasistaticSolver(NonlinearImplicitSolverBase):
 
                         restartFileName = restartHistoryManager.getNextRestartFileName()
                         self._writeRestart(model, timeStepper, restartFileName)
-                        restartHistoryManager.append(restartFileName)
+
+                    gc.collect() # Force collect to remove noise
+
+                    # Take a snapshot after
+                    # snapshot2 = tracemalloc.take_snapshot()
+                    #
+                    # top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+                    #
+                    # print("[ Top 10 differences ]")
+                    # for stat in top_stats[:10]:
+                    #     print(stat)       
+
+                    restartHistoryManager.append(restartFileName)
 
         except (ReachedMaxIncrements, ReachedMinIncrementSize):
             self.journal.errorMessage("Incrementation failed", self.identification)
