@@ -317,6 +317,11 @@ class NonlinearQuasistaticSolver(NonlinearImplicitSolverBase):
                 if not newtonCache:
                     newtonCache = self._createNewtonCache(theDofManager)
 
+                iterationHistory = None
+                dU = theDofManager.constructDofVector()
+                P = theDofManager.constructDofVector()
+
+
                 try:
                     for initialGuess in (dUPrediction, None):
                         try:
@@ -369,7 +374,7 @@ class NonlinearQuasistaticSolver(NonlinearImplicitSolverBase):
                         man.finalizeFailedIncrement()
 
                 else:
-                    if iterationHistory["iterations"] >= iterationOptions["critical iterations"]:
+                    if iterationHistory and iterationHistory["iterations"] >= iterationOptions["critical iterations"]:
                         timeStepper.preventIncrementIncrease()
 
                     U += dU
@@ -385,10 +390,12 @@ class NonlinearQuasistaticSolver(NonlinearImplicitSolverBase):
                         model.nodeFields[field.name].copyEntriesFromOther(field)
 
                     model.advanceToTime(timeStep.totalTime)
+        
 
-                    self.journal.message(
-                        "Converged in {:} iteration(s)".format(iterationHistory["iterations"]), self.identification, 1
-                    )
+                    if iterationHistory:
+                        self.journal.message(
+                            "Converged in {:} iteration(s)".format(iterationHistory["iterations"]), self.identification, 1
+                        )
 
                     self._finalizeIncrementOutput(fieldOutputController, outputManagers)
 
