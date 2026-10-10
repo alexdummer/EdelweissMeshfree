@@ -276,6 +276,14 @@ cdef class MarmotParticleWrapper:
         self._marmotParticle.getInterpolationVector(&Nview_[0], &coordinates[0])
         return N
 
+    def getInterpolationGradientVectorAtCenter(self) -> np.ndarray:
+        """Spatial gradient of the interpolation (shape function) vector at the particle's own
+        center, shape (nNodes, nDim): grad[A, i] = d(shape function of node A)/dx_i."""
+        cdef np.ndarray grad = np.zeros((len(self._nodes), self._nDim))
+        cdef double[:, ::1] gradView_ = grad
+        self._marmotParticle.getInterpolationGradientVectorAtCenter(&gradView_[0, 0])
+        return grad
+
     def assignKernelFunctions(self, list marmotMeshfreeKernelFunctionWrappers):
         self._assignedKernelFunctions = marmotMeshfreeKernelFunctionWrappers
         self._nAssignedKernelFunctions = len(marmotMeshfreeKernelFunctionWrappers)

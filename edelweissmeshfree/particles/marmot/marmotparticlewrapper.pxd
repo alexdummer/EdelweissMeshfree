@@ -134,6 +134,8 @@ cdef extern from "Marmot/MarmotParticle.h" namespace "Marmot::Meshfree":
 
         void getInterpolationVector( double* N, const double* coordinates)
 
+        void getInterpolationGradientVectorAtCenter( double* grad )
+
         int getNumberOfRequiredStateVars()
 
         void assignStateVars( double* stateVars, int nStateVars )

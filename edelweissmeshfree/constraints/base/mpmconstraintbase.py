@@ -138,3 +138,11 @@ class MPMConstraintBase(ABC, VIJEntityBase):
         timeStep
             The current step and total time.
         """
+
+    def acceptLastState(self):
+        """Called by :meth:`~edelweissfe.models.femodel.FEModel.advanceToTime` when an increment
+        is accepted, so a stateful constraint can promote the state of the last (converged) Newton
+        iterate to its history.
+
+        The default implementation does nothing, which is correct for every stateless constraint
+        (i.e. every constraint that does not override this method)."""
